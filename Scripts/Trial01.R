@@ -20,7 +20,7 @@ lowest_ave_temp <- Bom_data %>%
   mutate (Temp_diff = max_Temp - min_Temp) %>% 
   group_by(Month) %>%
   summarise(average = mean(Temp_diff)) 
-  slice(1) # gives ans: the month with lowest average daily temperature difference
+ 
   
 #question 3: Which state saw the lowest average daily temperature difference?
 
@@ -29,12 +29,22 @@ Tidy_bom_stations <- Bom_stations %>%
   spread(key = info, value= amount) %>% 
   mutate (Station_number=as.numeric(Station_number))
 
+state_ave_temp <- Bom_data %>%
+  separate(Temp_min_max, into = c("min_Temp", "max_Temp"), sep= "/") %>% 
+  mutate (min_Temp = as.numeric (min_Temp)) %>%   
+  mutate (max_Temp = as.numeric (max_Temp)) %>% 
+  mutate (Temp_diff = max_Temp - min_Temp) 
+ 
 
-combined_data <- full_join (Tidy_bom_stations, lowest_ave_temp, by= c("Station_number"= "Station_number"))
+combined_data <- full_join (Tidy_bom_stations, state_ave_temp, by= c("Station_number"= "Station_number"))
 
 state_lowest_ave_temp <- combined_data %>%
+filter(min_Temp != "NA", max_Temp != "NA") %>% 
+  mutate (min_Temp = as.numeric (min_Temp)) %>%   
+  mutate (max_Temp = as.numeric (max_Temp)) %>% 
+  mutate (Temp_diff = max_Temp - min_Temp) %>% 
   group_by(state) %>%
-  summarise(average = mean(average)) %>% 
+  summarise(average = mean(Temp_diff)) %>% 
   arrange(average) %>% #sorts from lowest to highest
   slice(1) #takes the smallest one and gives answer for state with lowest temp diff
 
