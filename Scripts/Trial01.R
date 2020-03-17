@@ -11,7 +11,7 @@ filter (min_Temp >=0, max_Temp >= 0, Rainfall >= 0) %>%
   summarise(num_row=n())
 view (question_1)
 
-#question_2 
+#question_2: Which month saw the lowest average daily temperature difference?
 lowest_ave_temp <- Bom_data %>%
   separate(Temp_min_max, into = c("min_Temp", "max_Temp"), sep= "/") %>% 
   filter (min_Temp >=0, max_Temp >= 0) %>% 
@@ -19,11 +19,24 @@ lowest_ave_temp <- Bom_data %>%
   mutate (max_Temp = as.numeric (max_Temp)) %>% 
   mutate (Temp_diff = max_Temp - min_Temp) %>% 
   group_by(Month) %>%
-  summarise(average = mean(Temp_diff))  
-  view desc(lowest_ave_temp)
+  summarise(average = mean(Temp_diff)) 
+  slice(1) # gives ans: the month with lowest average daily temperature difference
   
-  
+#question 3: Which state saw the lowest average daily temperature difference?
 
+Tidy_bom_stations <- Bom_stations %>% 
+  gather (key = Station_number, value=amount, -info) %>% 
+  spread(key = info, value= amount) %>% 
+  mutate (Station_number=as.numeric(Station_number))
+
+
+combined_data <- full_join (Tidy_bom_stations, lowest_ave_temp, by= c("Station_number"= "Station_number"))
+
+state_lowest_ave_temp <- combined_data %>%
+  group_by(state) %>%
+  summarise(average = mean(average)) %>% 
+  arrange(average) %>% #sorts from lowest to highest
+  slice(1) #takes the smallest one and gives answer for state with lowest temp diff
 
 
          
