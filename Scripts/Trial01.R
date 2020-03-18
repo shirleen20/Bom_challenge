@@ -71,8 +71,6 @@ question_4 <- combined_data %>%
   mutate(lon = as.numeric(lon)) %>% 
   group_by(Station_number, lon) %>%
   summarise(average_solar_exp = mean(Solar_exposure, na.rm = TRUE)) %>% # filtering here using na.rm = TRUE) 
-  arrange(lon) %>% 
-  filter (lon== min(lon)| lon== max(lon)) %>% 
   ungroup() %>% 
   filter (lon==min(lon) | lon==max(lon))
 #Answer question 4: No, the westmost (lowest longitude) or eastmost (highest longitude) 
