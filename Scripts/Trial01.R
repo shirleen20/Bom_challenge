@@ -1,27 +1,31 @@
+#Day 5
 library(tidyverse)
 Bom_data <- read_csv("Data/BOM_data.csv")
 view(Bom_data)
 Bom_stations <- read_csv ("Data/BOM_stations.csv")
 view(Bom_stations)
-
+#For each station, how many days have a minimum temperature, a maximum temperature and a rainfall measurement recorded?
 question_1 <- Bom_data %>% 
-separate(Temp_min_max, into = c("min_Temp", "max_Temp")) %>% 
-filter (min_Temp >=0, max_Temp >= 0, Rainfall >= 0) %>% 
+separate(Temp_min_max, into = c("min_Temp", "max_Temp"), sep = "/") %>% 
+filter (min_Temp != "-", max_Temp != "-", Rainfall != "-") %>% 
   group_by(Station_number) %>% 
   summarise(num_row=n())
 view (question_1)
+# Answer question1: 20 stations
+
 
 #question_2: Which month saw the lowest average daily temperature difference?
 lowest_ave_temp <- Bom_data %>%
   separate(Temp_min_max, into = c("min_Temp", "max_Temp"), sep= "/") %>% 
-  filter (min_Temp >=0, max_Temp >= 0) %>% 
+  filter (min_Temp != "-", max_Temp != "-") %>% 
   mutate (min_Temp = as.numeric (min_Temp)) %>%   
   mutate (max_Temp = as.numeric (max_Temp)) %>% 
   mutate (Temp_diff = max_Temp - min_Temp) %>% 
   group_by(Month) %>%
-  summarise(average = mean(Temp_diff)) 
+  summarise(average = mean(Temp_diff)) %>% 
+  arrange(average) %>% 
+  slice(1)
  
-  
 #question 3: Which state saw the lowest average daily temperature difference?
 
 Tidy_bom_stations <- Bom_stations %>% 
@@ -30,23 +34,39 @@ Tidy_bom_stations <- Bom_stations %>%
   mutate (Station_number=as.numeric(Station_number))
 
 state_ave_temp <- Bom_data %>%
-  separate(Temp_min_max, into = c("min_Temp", "max_Temp"), sep= "/") %>% 
-  mutate (min_Temp = as.numeric (min_Temp)) %>%   
-  mutate (max_Temp = as.numeric (max_Temp)) %>% 
-  mutate (Temp_diff = max_Temp - min_Temp) 
+  separate(Temp_min_max, into = c("min_Temp", "max_Temp"), sep= "/") 
  
 
 combined_data <- full_join (Tidy_bom_stations, state_ave_temp, by= c("Station_number"= "Station_number"))
 
+#Answer for Q3 after combining can be done in 2 ways
+#1st method
 state_lowest_ave_temp <- combined_data %>%
-filter(min_Temp != "NA", max_Temp != "NA") %>% 
-  mutate (min_Temp = as.numeric (min_Temp)) %>%   
+  filter(min_Temp != "-", max_Temp != "-") %>%
+  mutate (min_Temp = as.numeric (min_Temp)) %>% #lines 44-46 could be done in one line:  mutate(Temp_diff = as.numeric(max_Temp) - as.numeric(min_Temp)) %>% 
   mutate (max_Temp = as.numeric (max_Temp)) %>% 
   mutate (Temp_diff = max_Temp - min_Temp) %>% 
   group_by(state) %>%
-  summarise(average = mean(Temp_diff)) %>% 
+  summarise(average = mean(Temp_diff)) %>% #you can also do filtering here using summarise(average = mean(Temp_diff, na.rm = TRUE) %>% 
   arrange(average) %>% #sorts from lowest to highest
-  slice(1) #takes the smallest one and gives answer for state with lowest temp diff
+  slice(1) #gives answer for state with lowest temp diff
+#Answer Q3: QLD      7.36
+
+#Second Method to question 3 by removing 2nd line that says filter and use na.rm = TRUE
+state_lowest_ave_temp <- combined_data %>%
+  mutate (min_Temp = as.numeric (min_Temp)) %>%  
+  mutate (max_Temp = as.numeric (max_Temp)) %>% 
+  mutate (Temp_diff = max_Temp - min_Temp) %>% 
+  group_by(state) %>%
+  summarise(average = mean(Temp_diff, na.rm = TRUE)) %>% # filtering here using na.rm = TRUE) 
+  arrange(average) %>% #sorts from lowest to highest
+  slice(1) #gives answer for state with lowest temp diff
+
+#Day 6 # Question 4:
+#Does the westmost (lowest longitude) or eastmost (highest longitude) weather station in our dataset have a higher average solar exposure
+ 
 
 
-         
+
+
+        
