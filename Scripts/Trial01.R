@@ -37,7 +37,8 @@ state_ave_temp <- Bom_data %>%
   separate(Temp_min_max, into = c("min_Temp", "max_Temp"), sep= "/") 
  
 
-combined_data <- full_join (Tidy_bom_stations, state_ave_temp, by= c("Station_number"= "Station_number"))
+combined_data <- Tidy_bom_stations %>% 
+  full_join(state_ave_temp, by= c("Station_number"= "Station_number"))
 
 #Answer for Q3 after combining can be done in 2 ways
 #1st method
@@ -62,9 +63,22 @@ state_lowest_ave_temp <- combined_data %>%
   arrange(average) %>% #sorts from lowest to highest
   slice(1) #gives answer for state with lowest temp diff
 
-#Day 6 # Question 4:
+#Day 6 
+#Question 4:
 #Does the westmost (lowest longitude) or eastmost (highest longitude) weather station in our dataset have a higher average solar exposure
- 
+question_4 <- combined_data %>%
+  mutate(Solar_exposure = as.numeric(Solar_exposure)) %>%
+  mutate(lon = as.numeric(lon)) %>% 
+  group_by(Station_number, lon) %>%
+  summarise(average_solar_exp = mean(Solar_exposure, na.rm = TRUE)) %>% # filtering here using na.rm = TRUE) 
+  arrange(lon) %>% 
+  filter (lon== min(lon)| lon== max(lon)) %>% 
+  ungroup() %>% 
+  filter (lon==min(lon) | lon==max(lon))
+#Answer question 4: No, the westmost (lowest longitude) or eastmost (highest longitude) 
+#does not have a higher average solar exposure
+# The westmost (lowest longitude) has average solar exp = 19.2)
+# The eastmost (highest longitude) has average solar exp = 19.5
 
 
 
