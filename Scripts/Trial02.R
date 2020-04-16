@@ -65,9 +65,9 @@ Tidy_bom_stations <- Bom_stations %>%
 joined_data <- Tidy_bom_stations %>% 
   full_join(Bom_data, by= c("Station_number"= "Station_number"))
 
-q4 <- select(joined_data, state, Station_number, Month, Rainfall)
+#q4 <- select(joined_data, state, Station_number, Month, Rainfall)# reductant line of codes
 
-q4_data <- q4 %>% 
+q4_data <- joined_data %>% 
   group_by(state, Station_number, Month) %>%
   mutate(Rainfall=as.numeric(Rainfall)) %>% 
   filter(Rainfall != "-") %>% 
@@ -79,6 +79,7 @@ q4_plot1 <- q4_data %>%
   ggplot(aes(x= as.character(Month), y= mean_rainfall, colour=state, group=Station_number))+
   geom_line(size=1)+
   scale_colour_brewer(palette="Set3")
+
 
 #Plots seperated by state using facet wrap
 q4_plot2 <- q4_data %>% 
